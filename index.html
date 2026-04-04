@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXUS MAP — Cyber Cartography</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       HEADER / SEARCH BAR
+  ═══════════════════════════════════════════════ -->
+  <header class="top-bar">
+    <div class="logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">NEXUS<em>MAP</em></span>
+    </div>
+
+    <div class="search-wrapper">
+      <span class="search-icon">⌕</span>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="Search locations worldwide…"
+        autocomplete="off"
+      />
+      <div id="searchResults" class="search-dropdown hidden"></div>
+    </div>
+
+    <div class="header-status">
+      <span id="coordDisplay" class="coord-display">0.0000°N  0.0000°E</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════════════ -->
+  <aside id="sidebar" class="sidebar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+      <span>◁</span>
+    </button>
+
+    <nav class="sidebar-nav">
+
+      <!-- MODE BUTTONS -->
+      <section class="nav-section">
+        <h3 class="nav-label">INTERACTION MODE</h3>
+
+        <button id="btnAddMarker" class="nav-btn" data-mode="marker" title="Add Marker">
+          <span class="btn-icon">◎</span>
+          <span class="btn-text">Add Marker</span>
+          <span class="btn-badge">M</span>
+        </button>
+
+        <button id="btnDrawPolyline" class="nav-btn" data-mode="polyline" title="Draw Polyline">
+          <span class="btn-icon">╌</span>
+          <span class="btn-text">Draw Line</span>
+          <span class="btn-badge">L</span>
+        </button>
+
+        <button id="btnDrawPolygon" class="nav-btn" data-mode="polygon" title="Draw Polygon">
+          <span class="btn-icon">⬡</span>
+          <span class="btn-text">Draw Polygon</span>
+          <span class="btn-badge">P</span>
+        </button>
+
+        <button id="btnMeasure" class="nav-btn" data-mode="measure" title="Measure Distance">
+          <span class="btn-icon">⊹</span>
+          <span class="btn-text">Measure Distance</span>
+          <span class="btn-badge">D</span>
+        </button>
+
+        <button id="btnRoute" class="nav-btn" data-mode="route" title="Route Planner">
+          <span class="btn-icon">⇢</span>
+          <span class="btn-text">Route Planner</span>
+          <span class="btn-badge">R</span>
+        </button>
+      </section>
+
+      <!-- ROUTE PANEL (hidden until route mode) -->
+      <section id="routePanel" class="nav-section route-panel hidden">
+        <h3 class="nav-label">ROUTE PLANNER</h3>
+        <div class="route-inputs">
+          <div class="route-point" id="routeStart">
+            <span class="route-dot start-dot"></span>
+            <span id="routeStartLabel">Click map: set START</span>
+          </div>
+          <div class="route-point" id="routeEnd">
+            <span class="route-dot end-dot"></span>
+            <span id="routeEndLabel">Click map: set END</span>
+          </div>
+        </div>
+        <button id="btnCalculateRoute" class="action-btn" disabled>Calculate Route</button>
+        <button id="btnClearRoute" class="action-btn secondary">Clear Route</button>
+        <div id="routeInfo" class="route-info hidden"></div>
+      </section>
+
+      <!-- MEASURE PANEL -->
+      <section id="measurePanel" class="nav-section route-panel hidden">
+        <h3 class="nav-label">DISTANCE TOOL</h3>
+        <p class="panel-hint">Click map to add measurement points. Double-click to finish.</p>
+        <div id="measureInfo" class="route-info">
+          <span>Total: <strong id="measureTotal">0 m</strong></span>
+        </div>
+        <button id="btnClearMeasure" class="action-btn secondary">Clear Measure</button>
+      </section>
+
+      <!-- TOOLS -->
+      <section class="nav-section">
+        <h3 class="nav-label">TOOLS</h3>
+
+        <button id="btnLocate" class="nav-btn" title="Find my location">
+          <span class="btn-icon">⊕</span>
+          <span class="btn-text">Locate Me</span>
+        </button>
+
+        <button id="btnExport" class="nav-btn" title="Export map data">
+          <span class="btn-icon">↑</span>
+          <span class="btn-text">Export JSON</span>
+        </button>
+
+        <button id="btnImport" class="nav-btn" title="Import map data">
+          <span class="btn-icon">↓</span>
+          <span class="btn-text">Import JSON</span>
+        </button>
+        <input type="file" id="importFile" accept=".json" class="hidden" />
+
+        <button id="btnShare" class="nav-btn" title="Share via URL">
+          <span class="btn-icon">⌁</span>
+          <span class="btn-text">Share URL</span>
+        </button>
+
+        <button id="btnClear" class="nav-btn danger" title="Clear all map data">
+          <span class="btn-icon">✕</span>
+          <span class="btn-text">Clear All</span>
+        </button>
+      </section>
+
+      <!-- STATS -->
+      <section class="nav-section stats-section">
+        <h3 class="nav-label">SESSION STATS</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-val" id="statMarkers">0</span>
+            <span class="stat-key">Markers</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="statShapes">0</span>
+            <span class="stat-key">Shapes</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="statZoom">-</span>
+            <span class="stat-key">Zoom</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-val" id="statLayer">OSM</span>
+            <span class="stat-key">Layer</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- LAYER SWITCH -->
+      <section class="nav-section">
+        <h3 class="nav-label">MAP LAYER</h3>
+        <div class="layer-btns">
+          <button class="layer-btn active" data-layer="dark">DARK</button>
+          <button class="layer-btn" data-layer="standard">STANDARD</button>
+          <button class="layer-btn" data-layer="topo">TOPO</button>
+        </div>
+      </section>
+
+    </nav>
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════
+       MAP CONTAINER
+  ═══════════════════════════════════════════════ -->
+  <main id="map"></main>
+
+  <!-- ═══════════════════════════════════════════════
+       MODE INDICATOR
+  ═══════════════════════════════════════════════ -->
+  <div id="modeIndicator" class="mode-indicator hidden">
+    <span id="modeText">MARKER MODE</span>
+    <button id="btnExitMode">ESC</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       TOAST NOTIFICATIONS
+  ═══════════════════════════════════════════════ -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL BACKDROP
+  ═══════════════════════════════════════════════ -->
+  <div id="modalBackdrop" class="modal-backdrop hidden">
+    <div class="modal" id="markerModal">
+      <div class="modal-header">
+        <span class="modal-title">EDIT MARKER</span>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>TITLE
+          <input type="text" id="markerTitle" placeholder="Location name…" />
+        </label>
+        <label>DESCRIPTION
+          <textarea id="markerDesc" placeholder="Notes about this place…" rows="4"></textarea>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button id="markerSave" class="action-btn">Save</button>
+        <button id="markerDelete" class="action-btn danger">Delete Marker</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

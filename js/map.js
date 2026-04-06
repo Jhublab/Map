@@ -1,6 +1,7 @@
 import { clamp } from "./state.js";
 
-const VECTOR_TILES_URL = "https://demotiles.maplibre.org/tiles/tiles.json";
+const VECTOR_TILES_URL =
+  "https://api.maptiler.com/tiles/v3/tiles.json?key=oh7jcaYXgJEVKTwbfYLx";
 const SEARCH_TIMEOUT_MS = 9000;
 
 function adjustBrightness(hex, amount) {

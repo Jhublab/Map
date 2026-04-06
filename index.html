@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATLAS Map Poster Generator | Žemėlapių plakatų kūrimas</title>
+  <meta name="description" content="ATLAS leidžia kurti aukštos raiškos miestų žemėlapių plakatus, valdyti spalvas, formatus, spaudos dydžius ir eksportuoti PNG visiškai statinėje aplikacijoje.">
+  <meta name="keywords" content="ATLAS, žemėlapio plakatas, MapLibre, miesto plakatas, PNG eksportas, poster generatorius">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://atlas.sys32.lt">
+  <meta property="og:title" content="ATLAS Map Poster Generator">
+  <meta property="og:description" content="Kurti miestų žemėlapių plakatus su MapLibre, WYSIWYG peržiūra ir aukštos kokybės PNG eksportu.">
+  <meta property="og:image" content="https://atlas.sys32.lt/og-image.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://atlas.sys32.lt">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ATLAS Map Poster Generator">
+  <meta name="twitter:description" content="Statinis miestų žemėlapių plakatų generatorius su paruoštais spaudos formatais ir tikslia PNG išvestimi.">
+  <meta name="twitter:image" content="https://atlas.sys32.lt/og-image.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "ATLAS Map Poster Generator",
+    "url": "https://atlas.sys32.lt",
+    "applicationCategory": "DesignApplication",
+    "operatingSystem": "Web",
+    "description": "Statinis miestų žemėlapių plakatų generatorius su MapLibre GL JS, spaudos formatais ir PNG eksportu."
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Ar ATLAS veikia be serverio?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Taip, aplikacija yra visiškai statinė ir gali būti talpinama paprastame hostinge."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Ar eksporte rodomas miesto pavadinimas ir koordinatės?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Taip, eksporte visada įtraukiamas miesto pavadinimas, koordinatės, pavadinimas, subtitras ir pasirenkamas watermark."
+        }
+      }
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "Kaip sukurti žemėlapio plakatą su ATLAS",
+    "step": [
+      { "@type": "HowToStep", "name": "Įveskite miestą", "text": "Paieškoje įveskite miesto ar vietovės pavadinimą ir raskite norimą lokaciją." },
+      { "@type": "HowToStep", "name": "Pasirinkite stilių", "text": "Nustatykite spalvas, spaudos dydį, maketą, rezoliuciją ir pavadinimus." },
+      { "@type": "HowToStep", "name": "Eksportuokite", "text": "Sugeneruokite PNG failą, kurio išvaizda atitinka peržiūrą." }
+    ]
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <div class="site-shell">
+    <aside class="sidebar" id="sidebar">
+      <header class="sidebar-header">
+        <p class="eyebrow">Žemėlapio plakato studija</p>
+        <h1>ATLAS Map Poster Generator</h1>
+        <p class="lead">Kurti miestų žemėlapių plakatus lietuviškai, tiksliai pagal peržiūrą, be jokių papildomų serverio komponentų.</p>
+      </header>
+
+      <section class="panel-section">
+        <label class="section-label" for="cityInput">Miestas</label>
+        <div class="search-row">
+          <input id="cityInput" class="text-input" type="text" placeholder="Įveskite miestą arba vietovę">
+          <button id="searchBtn" class="btn btn-accent" type="button">Ieškoti</button>
+        </div>
+        <p class="search-hint" id="searchHint">Ieškokite miesto, o pavadinimas ir koordinatės bus atnaujinti automatiškai.</p>
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label">Stiliaus presetai</label>
+        <div class="preset-grid" id="presetGrid"></div>
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label" for="titleInput">Pavadinimas ir subtitras</label>
+        <input id="titleInput" class="text-input" type="text" placeholder="Pavadinimas">
+        <input id="subtitleInput" class="text-input" type="text" placeholder="Subtitras">
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label">Sluoksniai ir spalvos</label>
+        <div class="layer-row">
+          <label class="toggle"><input id="toggleRoads" type="checkbox" checked><span></span></label>
+          <span>Keliai</span>
+          <input id="colorRoads" class="color-input" type="color" value="#f2c94c">
+        </div>
+        <div class="layer-row">
+          <label class="toggle"><input id="toggleWater" type="checkbox" checked><span></span></label>
+          <span>Vanduo</span>
+          <input id="colorWater" class="color-input" type="color" value="#183d5d">
+        </div>
+        <div class="layer-row">
+          <label class="toggle"><input id="toggleBuildings" type="checkbox" checked><span></span></label>
+          <span>Pastatai</span>
+          <input id="colorBuildings" class="color-input" type="color" value="#11161d">
+        </div>
+        <div class="layer-row">
+          <label class="toggle"><input id="toggleBackground" type="checkbox" checked><span></span></label>
+          <span>Fonas</span>
+          <input id="colorBackground" class="color-input" type="color" value="#050608">
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label">Derinimas</label>
+        <div class="control-row">
+          <span>Linijų storis</span>
+          <div class="slider-wrap">
+            <input id="lineWidth" type="range" min="0.6" max="6" step="0.1">
+            <span id="lineWidthVal">2.2</span>
+          </div>
+        </div>
+        <div class="control-row">
+          <span>Šviesumas</span>
+          <div class="slider-wrap">
+            <input id="brightness" type="range" min="85" max="115" step="1">
+            <span id="brightnessVal">100%</span>
+          </div>
+        </div>
+        <div class="control-row">
+          <span>Kontrastas</span>
+          <div class="slider-wrap">
+            <input id="contrast" type="range" min="90" max="110" step="1">
+            <span id="contrastVal">104%</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label">Maketavimas ir spauda</label>
+        <select id="layoutSelect" class="select-input"></select>
+        <select id="printSizeSelect" class="select-input"></select>
+        <select id="resolutionSelect" class="select-input"></select>
+        <div id="customResolutionWrap">
+          <input id="customResolution" class="text-input" type="number" min="1" max="8" step="0.5" placeholder="Pasirinktinis mastelis">
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <label class="section-label">Vandens ženklas</label>
+        <div class="toggle-row">
+          <span>Watermark įtraukti į eksportą</span>
+          <label class="toggle"><input id="watermarkToggle" type="checkbox"><span></span></label>
+        </div>
+        <input id="watermarkInput" class="text-input" type="text" placeholder="Pvz. atlas.sys32.lt">
+        <select id="watermarkPosition" class="select-input">
+          <option value="right">Apačioje dešinėje</option>
+          <option value="left">Apačioje kairėje</option>
+        </select>
+      </section>
+
+      <section class="panel-section actions">
+        <button id="randomizeBtn" class="btn" type="button">Atsitiktinis stilius</button>
+        <button id="saveBtn" class="btn" type="button">Išsaugoti presetą</button>
+        <button id="loadBtn" class="btn" type="button">Užkrauti presetą</button>
+        <div class="zoom-row">
+          <button id="zoomIn" class="btn" type="button">Priartinti</button>
+          <button id="zoomOut" class="btn" type="button">Nutolinti</button>
+        </div>
+        <button id="exportBtn" class="btn btn-accent" type="button">Atsisiųsti PNG</button>
+      </section>
+
+      <footer class="sidebar-footer">
+        <section>
+          <h2>Kuo naudingas ATLAS</h2>
+          <p>ATLAS skirtas greitai sukurti spaudai paruoštą žemėlapio plakato maketą su tiksliu miesto pavadinimu, koordinatėmis, pasirinktu maketu ir aukštos kokybės eksportu.</p>
+          <ul class="feature-list">
+            <li>Vertikalus, horizontalus ir kvadratinis maketas</li>
+            <li>A4, A3, A2 ir A1 spaudos dydžiai 300 DPI bazėje</li>
+            <li>WYSIWYG PNG eksportas su atskirai piešiamu watermark</li>
+            <li>Vietinis presetų išsaugojimas naršyklėje</li>
+          </ul>
+        </section>
+      </footer>
+    </aside>
+
+    <main class="workspace">
+      <button id="mobileToggle" class="mobile-toggle" type="button" aria-label="Atidaryti valdiklius">Meniu</button>
+      <section class="preview-section">
+        <div class="poster-surface" id="posterSurface">
+          <div id="map"></div>
+          <div class="overlay-capture" id="overlayCapture">
+            <div class="poster-header">
+              <p class="poster-title" id="posterTitle">ATLAS</p>
+            <p class="poster-subtitle" id="posterSubtitle">MIESTO PLAKATO GENERATORIUS</p>
+            </div>
+            <div class="poster-footer">
+              <div class="city-label-overlay">
+                <p class="city-name-display" id="cityNameDisplay">KAUNAS</p>
+                <p class="city-coords-display" id="cityCoords">54.8985° N · 23.9036° E</p>
+              </div>
+              <p class="preview-watermark" id="previewWatermark" data-export-ignore="true" hidden>atlas.sys32.lt</p>
+            </div>
+          </div>
+          <div class="map-loading" id="mapLoading">
+            <div class="spinner"></div>
+            <p>Kraunamas žemėlapis...</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

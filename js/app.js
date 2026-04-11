@@ -27,13 +27,18 @@ async function bootstrap() {
 
   const loading = document.getElementById("mapLoading");
   let loaderResolved = false;
+  
+  // Show loading message immediately
+  loading.hidden = false;
+  loading.innerHTML = '<div class="spinner"></div><p>Žemėlapio įkėlimas...</p>';
+  
   const loadTimeoutId = setTimeout(() => {
     if (loaderResolved) {
       return;
     }
     loaderResolved = true;
     loading.hidden = false;
-    loading.innerHTML = "<p>Nepavyko užkrauti žemėlapio. Perkraukite puslapį.</p>";
+    loading.innerHTML = '<div class="spinner"></div><p>Nepavyko užkrauti žemėlapio.<br>Perkraukite puslapį.</p>';
   }, 12000);
 
   const resolveLoader = (error) => {
@@ -46,7 +51,7 @@ async function bootstrap() {
 
     if (error) {
       loading.hidden = false;
-      loading.innerHTML = "<p>Žemėlapio įkelti nepavyko.</p>";
+      loading.innerHTML = '<div class="spinner"></div><p>Žemėlapio įkelti nepavyko.<br>Perkraukite puslapį.</p>';
       return;
     }
 

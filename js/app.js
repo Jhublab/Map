@@ -29,7 +29,7 @@ async function bootstrap() {
   let loaderResolved = false;
   
   // Show loading message immediately
-  loading.hidden = false;
+  loading.removeAttribute("hidden");
   loading.innerHTML = '<div class="spinner"></div><p>Žemėlapio įkėlimas...</p>';
   
   const loadTimeoutId = setTimeout(() => {
@@ -37,7 +37,7 @@ async function bootstrap() {
       return;
     }
     loaderResolved = true;
-    loading.hidden = false;
+    loading.removeAttribute("hidden");
     loading.innerHTML = '<div class="spinner"></div><p>Nepavyko užkrauti žemėlapio.<br>Perkraukite puslapį.</p>';
   }, 12000);
 
@@ -50,12 +50,12 @@ async function bootstrap() {
     clearTimeout(loadTimeoutId);
 
     if (error) {
-      loading.hidden = false;
+      loading.removeAttribute("hidden");
       loading.innerHTML = '<div class="spinner"></div><p>Žemėlapio įkelti nepavyko.<br>Perkraukite puslapį.</p>';
       return;
     }
 
-    loading.hidden = true;
+    loading.setAttribute("hidden", "");
   };
 
   const map = initMap({

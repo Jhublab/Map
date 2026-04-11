@@ -23,6 +23,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 html,
 body {
   margin: 0;
@@ -426,38 +430,48 @@ input[type="range"]:hover {
 }
 
 .map-loading {
+  position: absolute;
+  inset: 0;
   display: grid;
   place-items: center;
   gap: 20px;
   background: 
     radial-gradient(circle at top, rgba(242, 201, 76, 0.08), transparent 40%),
-    rgba(5, 6, 8, 0.85);
+    rgba(5, 6, 8, 0.88);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   z-index: 8;
   flex-direction: column;
   padding: 40px;
   animation: loading-fadein 0.3s ease;
 }
 
+.map-loading:not([hidden]) {
+  display: grid;
+}
+
 .spinner {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  border: 4px solid rgba(255, 255, 255, 0.08);
   border-top-color: var(--accent);
-  border-right-color: rgba(242, 201, 76, 0.4);
-  animation: spin 1s linear infinite;
+  border-right-color: rgba(242, 201, 76, 0.5);
+  animation: spin 1.2s linear infinite;
   box-shadow: 
-    0 0 0 1px rgba(242, 201, 76, 0.08),
-    0 0 20px rgba(242, 201, 76, 0.12);
+    inset 0 0 0 1px rgba(242, 201, 76, 0.05),
+    0 0 30px rgba(242, 201, 76, 0.18),
+    0 0 60px rgba(242, 201, 76, 0.08);
+  will-change: transform;
 }
 
 .map-loading p {
   margin: 0;
   color: var(--accent);
-  font: 500 0.95rem/1.4 var(--font-body);
-  letter-spacing: 0.05em;
+  font: 500 0.98rem/1.5 var(--font-body);
+  letter-spacing: 0.06em;
   text-align: center;
+  animation: text-pulse 2s ease-in-out infinite;
 }
 
 .maplibregl-ctrl-attrib,
@@ -479,11 +493,29 @@ input[type="range"]:hover {
   }
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes loading-fadein {
   from {
     opacity: 0;
   }
   to {
+    opacity: 1;
+  }
+}
+
+@keyframes text-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
     opacity: 1;
   }
 }

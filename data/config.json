@@ -1,0 +1,9 @@
+{
+  "siteUrl": "https://atlas.sys32.lt",
+  "siteName": "ATLAS Map Poster Generator",
+  "defaultCenter": [23.9036, 54.8985],
+  "defaultZoom": 12.5,
+  "nominatimUrl": "https://nominatim.openstreetmap.org/search",
+  "storageKey": "atlas-style",
+  "defaultWatermarkOpacity": 0.58
+}
